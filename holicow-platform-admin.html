@@ -1,0 +1,1554 @@
+<!-- Tenor Platform Admin v1.7 — Internal Ops Tool — Built March 2026 -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tenor Platform Admin</title>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Open+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --purple:        #6433A0;
+      --purple-faint:  #F3EEFA;
+      --purple-muted:  #DDD0F0;
+      --purple-dark:   #5a2e90;
+      --brand-indigo:  #3D51A3;
+      --ink-900:       #0A0A0F;
+      --ink-800:       #2A2A33;
+      --ink-600:       #6B6B78;
+      --ink-400:       #B5B5BE;
+      --ink-300:       #D4D4DB;
+      --ink-200:       #E8E8ED;
+      --ink-100:       #F4F4F2;
+      --success:       #2D7A5F;
+      --warning:       #B5790E;
+      --danger:        #A8322F;
+      --text-default:  #2A2A33;
+      --text-muted:    #6B6B78;
+      --border-default:#E8E8ED;
+      --surface-card:  #FFFFFF;
+      --success-bg:    #E8F4EC;
+      --warning-bg:    #FAF3E2;
+      --danger-bg:     #FBECEC;
+    }
+    body { font-family: 'Open Sans', -apple-system, BlinkMacSystemFont, sans-serif; color: var(--text-default); -webkit-font-smoothing: antialiased; }
+    .sidebar-nav-item { transition: background 0.15s, color 0.15s; border-left: 3px solid transparent; }
+    .sidebar-nav-item:hover { background-color: rgba(255,255,255,0.08); color: #fff; }
+    .sidebar-nav-item.active { background-color: rgba(100,51,160,0.20); color: #fff; border-left: 3px solid var(--purple); font-weight: 600; }
+    .sidebar-nav-item:not(.active) { color: rgba(255,255,255,0.78); }
+    .metric-card { background: var(--surface-card); border-radius: 0.625rem; box-shadow: 0 1px 3px rgba(10,10,15,0.06); padding: 1.25rem; border: 1px solid var(--border-default); }
+    .status-healthy { color: var(--success); }
+    .status-warning { color: var(--warning); }
+    .status-gray    { color: var(--text-muted); }
+    .alert-amber    { background-color: #FFF8E6; border-left: 4px solid var(--warning); }
+    .table-row-warning { border-left: 3px solid var(--warning); }
+    .collapsible-form { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; }
+    .collapsible-form.open { max-height: 500px; }
+    /* ── Badge utility classes ────────────────────────────────────────── */
+    .badge { display:inline-flex; align-items:center; font-size:11px; font-weight:700; font-family:'Montserrat',-apple-system,sans-serif; letter-spacing:0.3px; border-radius:9999px; padding:2px 10px; text-transform:uppercase; }
+    .badge-green  { background:#E8F4EC; color:var(--success); }
+    .badge-amber  { background:#FAF3E2; color:var(--warning); }
+    .badge-red    { background:#FBECEC; color:var(--danger); }
+    .badge-gray   { background:var(--ink-100); color:var(--text-muted); }
+    .badge-purple { background:var(--purple-faint); color:var(--purple); }
+    .badge-blue   { background:#EEF2FA; color:var(--brand-indigo); }
+    /* ── Info / notice panels ─────────────────────────────────────────── */
+    .notice-info  { background:#EEF2FA; border:1px solid rgba(61,81,163,0.20); border-radius:0.5rem; padding:1rem; color:var(--ink-800); font-size:0.875rem; }
+    .notice-warn  { background:#FAF3E2; border:1px solid rgba(181,121,14,0.25); border-radius:0.5rem; padding:1rem; color:var(--ink-800); font-size:0.875rem; }
+    .notice-success { background:#E8F4EC; border:1px solid rgba(45,122,95,0.25); border-radius:0.5rem; padding:1rem; color:var(--ink-800); font-size:0.875rem; }
+    /* ── Form inputs ──────────────────────────────────────────────────── */
+    .admin-input { border:1px solid var(--border-default); border-radius:0.375rem; padding:0.5rem 0.75rem; font-family:'Open Sans',-apple-system,sans-serif; font-size:0.875rem; color:var(--text-default); outline:none; width:100%; }
+    .admin-input:focus { border-color:var(--purple); box-shadow:0 0 0 2px rgba(100,51,160,0.15); }
+    /* ── Table header tint ────────────────────────────────────────────── */
+    .admin-table thead tr { background:var(--purple-faint); }
+    .admin-table thead th { color:var(--ink-800); font-size:11px; font-weight:700; letter-spacing:0.4px; text-transform:uppercase; font-family:'Montserrat',-apple-system,sans-serif; padding:0.75rem 1.25rem; text-align:left; }
+    .admin-table tbody td { padding:0.75rem 1.25rem; font-size:0.875rem; color:var(--text-default); border-bottom:1px solid var(--ink-200); }
+    .admin-table tbody tr:last-child td { border-bottom:none; }
+    .admin-table tbody tr:hover { background:var(--purple-faint); }
+    /* ── Section h2/h3 inside content pane ───────────────────────────── */
+    .admin-section-title { font-size:1rem; font-weight:700; font-family:'Montserrat',-apple-system,sans-serif; color:var(--ink-800); }
+    /* ── Toast ────────────────────────────────────────────────────────── */
+    .admin-toast { position:fixed; top:1rem; right:1rem; background:var(--surface-card); border:1px solid var(--border-default); border-left:4px solid var(--success); border-radius:0.5rem; padding:0.75rem 1rem; font-size:0.875rem; color:var(--success); font-weight:600; box-shadow:0 4px 12px rgba(10,10,15,0.12); z-index:50; }
+    /* ── Confidence bar ───────────────────────────────────────────────── */
+    .confidence-bar-fill { background:var(--success); height:100%; }
+    /* ── Ghost/outline button ───────────────────────────────────────────── */
+    .admin-btn-ghost { padding:0.5rem 1rem; font-size:0.875rem; font-weight:500; border-radius:0.375rem; border:1px solid var(--brand-indigo); color:var(--brand-indigo); background:transparent; cursor:pointer; transition:background 120ms; }
+    .admin-btn-ghost:hover { background:var(--purple-faint); }
+    /* ── Ghost/danger button ───────────────────────────────────────────── */
+    .admin-btn-ghost-danger { padding:0.25rem 0.5rem; font-size:0.75rem; font-weight:500; border-radius:0.375rem; border:1px solid rgba(168,50,47,0.25); color:var(--danger); background:transparent; cursor:pointer; transition:background 120ms; }
+    .admin-btn-ghost-danger:hover { background:var(--danger-bg); }
+    /* ── Pill active (nav/filter pills, selected state) ────────────────── */
+    .pill-active { background:var(--purple); color:var(--surface-card); }
+    /* ── Primary action button ───────────────────────────────────────────── */
+    .admin-btn-primary { background:var(--purple); color:var(--surface-card); cursor:pointer; padding:0.5rem 1rem; font-size:0.875rem; font-weight:500; border-radius:0.375rem; transition:background 120ms; }
+    .admin-btn-primary:hover { background:var(--purple-dark); }
+    /* ── Secondary + pill-inactive ─────────────────────────────────────── */
+    .admin-btn-secondary { padding:0.5rem 1rem; font-size:0.875rem; font-weight:500; border-radius:0.375rem; border:1px solid var(--border-default); color:var(--text-default); background:var(--surface-card); cursor:pointer; transition:background 120ms; }
+    .admin-btn-secondary:hover { background:var(--ink-100); }
+    .pill-inactive { background:var(--surface-card); border:1px solid var(--border-default); color:var(--text-default); transition:background 120ms; }
+    .pill-inactive:hover { background:var(--ink-100); }
+  </style>
+</head>
+<body class="bg-gray-50">
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useMemo } = React;
+
+    // ── DS Tokens ──────────────────────────────────────────────────────────
+    const T = {
+      purple:'#6433A0', indigo:'#3D51A3', black:'#0A0A0F',
+      ink800:'#2A2A33', ink600:'#6B6B78', ink300:'#D4D4DB', ink200:'#E8E8ED', ink100:'#F4F4F2',
+      success:'#2D7A5F', warning:'#B5790E', danger:'#A8322F',
+      fontDisplay:"'Montserrat',-apple-system,sans-serif",
+      fontBody:"'Open Sans',-apple-system,sans-serif",
+    };
+
+    // ── Admin session user ──────────────────────────────────────────────────────
+    const ADMIN_USER = {
+      name:     'Gaurav Jain',
+      title:    'Implementation Lead',
+      initials: 'GJ',
+      email:    'gaurav.jain@holicow.ai',
+    };
+
+    // ── Roles (mirrors prototype ROLE_CONFIG — protoRole = role key used in prototype) ──
+    const ROLES = [
+      { id: 'treasurer', label: 'Treasurer',   badgeClass: 'badge-purple', protoRole: 'paul', description: 'Full portfolio access — investment decisions, board reports, all 17 screens' },
+      { id: 'ops',       label: 'Ops Manager', badgeClass: 'badge-blue',   protoRole: 'hope', description: 'Operations — uploads, reconciliation, month-end close, cash register' },
+    ];
+
+    // ── HCWordmark ─────────────────────────────────────────────────────────
+    function HCWordmark({ h = 28, style }) {
+      return (
+        <img src="holicow-wordmark.png" alt="Holicow" draggable={false}
+          style={{ height: h, width: Math.round(h * (2370/423)), display:'inline-block', userSelect:'none', ...style }} />
+      );
+    }
+
+    // ── RevealMark / RevealDot ──────────────────────────────────────────────
+    function RevealMark({ size = 120, opacity = 1, style }) {
+      return (
+        <img src="../../assets/reveal-mark.png" alt="" draggable={false}
+          style={{ width: size, height: Math.round(size * (1053/773)), display:'block', opacity, userSelect:'none', ...style }} />
+      );
+    }
+    function RevealDot({ size = 14, style }) {
+      return (
+        <img src="../../assets/reveal-mark.png" alt="" draggable={false}
+          style={{ width: size, height: Math.round(size * (1053/773)), display:'inline-block', verticalAlign:'middle', userSelect:'none', ...style }} />
+      );
+    }
+
+    // ============ DATA CONSTANTS ============
+    const CLIENTS = [
+      {
+        id: 'proviso',
+        name: 'Proviso Township THSD #209',
+        shortName: 'Proviso Township',
+        treasurer: 'Paul Bellisario',
+        email: 'PBellisario@provisotreasurer.com',
+        phone: '(708) 338-5000',
+        aum: 374.0,
+        districts: 18,
+        users: 3,
+        status: 'live',
+        tier: 'Professional',
+        mrr: 2800,
+        liveDate: 'Feb 1, 2026',
+        lastLogin: 'Today 8:14 AM',
+        lastRec: 'Feb 28, 2026',
+        recStatus: 'complete',
+        integrations: 5,
+        integrationsHealthy: 4,
+        integrationsWarning: 0,
+        health: 'healthy',
+        notes: 'First client. Paul very engaged. Liv retiring in ~16 months — key urgency driver.',
+        contact: ADMIN_USER.name,
+      },
+      {
+        id: 'lyons',
+        name: 'Lyons Township HSD #204',
+        shortName: 'Lyons Township',
+        treasurer: 'Karen Mitchell',
+        email: 'kmitchell@lyonshs.org',
+        phone: '(708) 579-6300',
+        aum: 87.0,
+        districts: 4,
+        users: 0,
+        status: 'onboarding',
+        tier: 'Starter',
+        mrr: 1200,
+        onboardingStep: 3,
+        onboardingStepName: 'ERP Integration',
+        integrations: 1,
+        integrationsHealthy: 0,
+        integrationsWarning: 1,
+        health: 'warning',
+        notes: 'Tyler Tech InfoLink setup in progress — Fund Balance, Payroll Schedule, Operating Statement reports scheduled to lyons.ttreports@holicow.ai. No ODBC required.',
+        contact: ADMIN_USER.name,
+      },
+      {
+        id: 'niles',
+        name: 'Niles Township HSD #219',
+        shortName: 'Niles Township',
+        treasurer: 'Robert Chen',
+        email: 'rchen@nileshs.org',
+        phone: '(847) 626-3000',
+        aum: 142.0,
+        districts: 6,
+        users: 0,
+        status: 'prospect',
+        tier: '—',
+        mrr: 0,
+        integrations: 0,
+        integrationsHealthy: 0,
+        integrationsWarning: 0,
+        health: 'gray',
+        notes: 'Demo scheduled April 3. Robert saw Proviso case study. Strong interest in AI recommendations.',
+        contact: ADMIN_USER.name,
+      }
+    ];
+
+    // roleId maps to ROLES[].id — badge/label derived at render; protoRole is the prototype’s role key
+    const USERS = [
+      { id: 1, name: 'Paul Bellisario', email: 'PBellisario@provisotreasurer.com', roleId: 'treasurer', clientId: 'proviso', lastLogin: 'Today 8:14 AM', created: 'Feb 1, 2026', status: 'active', mfa: true },
+      { id: 2, name: 'Hope Allen',      email: 'HAllen@provisotreasurer.com',      roleId: 'ops', clientId: 'proviso', lastLogin: 'Today 9:02 AM', created: 'Feb 1, 2026', status: 'active', mfa: true },
+      { id: 3, name: 'Livia Sforza',    email: 'LSforza@provisotreasurer.com',     roleId: 'ops', clientId: 'proviso', lastLogin: 'Yesterday 4:47 PM', created: 'Feb 1, 2026', status: 'active', mfa: false },
+    ];
+
+    // client display derived at render via CLIENTS.find(c=>c.id===clientId).shortName — not stored inline
+    const INTEGRATIONS = [
+      { id: 1, clientId: 'proviso', name: 'Tyler Tech InfoLink', type: 'ERP', vendor: 'Tyler Technologies', method: 'Scheduled Email CSV', lastSync: 'Mar 28, 2026', nextSync: 'Apr 1, 2026', status: 'healthy', rows: 49, note: '' },
+      { id: 2, clientId: 'proviso', name: 'Republic Bank (#0723/#7661/#0936)', type: 'Bank', vendor: 'Republic Bank', method: 'Manual CSV Download', lastSync: 'Today 8:03 AM', nextSync: '—', status: 'healthy', rows: 312, note: '' },
+      { id: 3, clientId: 'proviso', name: 'Illinois Funds (LGIP)', type: 'Institution', vendor: 'Illinois Funds', method: 'Manual Upload', lastSync: 'Mar 10, 2026', nextSync: 'Apr 10, 2026', status: 'healthy', rows: 1, note: '' },
+      { id: 4, clientId: 'proviso', name: 'First Horizon (safekeeping)', type: 'Institution', vendor: 'First Horizon Bank', method: 'PDF Upload', lastSync: 'Mar 3, 2026', nextSync: 'Apr 3, 2026', status: 'healthy', rows: 31, note: '' },
+      { id: 5, clientId: 'proviso', name: 'Republic Bank (#5212)', type: 'Bank', vendor: 'Republic Bank', method: 'Manual CSV Download', lastSync: 'Never', nextSync: '—', status: 'setup', rows: 0, note: 'Money market account — configure upload template' },
+      { id: 6, clientId: 'lyons', name: 'Tyler Tech InfoLink', type: 'ERP', vendor: 'Tyler Technologies', method: 'Scheduled Email CSV', lastSync: 'Never', nextSync: '—', status: 'setup', rows: 0, note: 'InfoLink setup in progress — confirm delivery email address with Tyler Tech support' },
+    ];
+
+    // ── Feature Flags seed — keyed by clientId, only live/onboarding clients ───────────
+    // lastChangedAI/Workflow/Comm are per-client section timestamps (shown in UI)
+    const FEATURE_FLAGS_SEED = {
+      proviso: {
+        lastChangedAI:       'Mar 5, 2026',
+        lastChangedWorkflow: 'Feb 28, 2026',
+        lastChangedComm:     'Mar 1, 2026',
+        aiFeatures: [
+          { key: 'ai_recommendations',  name: 'AI Recommendations',   enabled: true,  description: 'Investment AI engine — core differentiator' },
+          { key: 'ask_tenor',           name: 'Ask Tenor',            enabled: true,  description: 'Natural language search (monthly query budget configurable)', monthlyBudget: 50 },
+          { key: 'ai_statement_parsing',name: 'AI Statement Parsing', enabled: true,  description: 'Auto exception detection on uploads' },
+          { key: 'ai_board_reports',    name: 'AI Board Reports',     enabled: false, description: 'V2 feature — not in V1 scope' },
+        ],
+        workflowFeatures: [
+          { key: 'tdf_calculator',         name: 'TDF Calculator',           enabled: true,  description: 'Township-specific — not all clients need this' },
+          { key: 'district_portal',        name: 'District Viewer Portal',   enabled: false, description: 'V2 feature — district access not in V1 scope' },
+          { key: 'report_auto_generation', name: 'Report Auto-Generation',   enabled: true,  description: 'District reports (3 report types per district per month)' },
+          { key: 'je_export',              name: 'JE Export',                enabled: true,  description: 'TDF & tax revenue JE export to Tyler Tech (2 JE types only)' },
+        ],
+        commFeatures: [
+          { key: 'email_notifications', name: 'Email Notifications', enabled: true,  description: 'SendGrid — maturity alerts, close reminders' },
+          { key: 'sms_alerts',          name: 'SMS Alerts',          enabled: false, description: 'Twilio — urgent alerts only' },
+          { key: 'pdf_auto_delivery',   name: 'PDF Auto-Delivery',   enabled: false, description: 'Auto-email PDFs to stakeholders (configurable per client)' },
+        ],
+      },
+      lyons: {
+        lastChangedAI:       'Apr 2, 2026',
+        lastChangedWorkflow: 'Apr 2, 2026',
+        lastChangedComm:     'Apr 2, 2026',
+        aiFeatures: [
+          { key: 'ai_recommendations',  name: 'AI Recommendations',   enabled: true,  description: 'Investment AI engine — core differentiator' },
+          { key: 'ask_tenor',           name: 'Ask Tenor',            enabled: false, description: 'Natural language search (monthly query budget configurable)', monthlyBudget: 0 },
+          { key: 'ai_statement_parsing',name: 'AI Statement Parsing', enabled: false, description: 'Auto exception detection on uploads' },
+          { key: 'ai_board_reports',    name: 'AI Board Reports',     enabled: false, description: 'V2 feature — not in V1 scope' },
+        ],
+        workflowFeatures: [
+          { key: 'tdf_calculator',         name: 'TDF Calculator',           enabled: false, description: 'Township-specific — not all clients need this' },
+          { key: 'district_portal',        name: 'District Viewer Portal',   enabled: false, description: 'V2 feature — district access not in V1 scope' },
+          { key: 'report_auto_generation', name: 'Report Auto-Generation',   enabled: false, description: 'District reports (3 report types per district per month)' },
+          { key: 'je_export',              name: 'JE Export',                enabled: false, description: 'TDF & tax revenue JE export to Tyler Tech (2 JE types only)' },
+        ],
+        commFeatures: [
+          { key: 'email_notifications', name: 'Email Notifications', enabled: true,  description: 'SendGrid — maturity alerts, close reminders' },
+          { key: 'sms_alerts',          name: 'SMS Alerts',          enabled: false, description: 'Twilio — urgent alerts only' },
+          { key: 'pdf_auto_delivery',   name: 'PDF Auto-Delivery',   enabled: false, description: 'Auto-email PDFs to stakeholders (configurable per client)' },
+        ],
+      },
+    };
+
+    // ── AI usage seed — per client, current month snapshot ─────────────────────
+    const AI_USAGE_SEED = {
+      proviso: { recCalls: 12, recCost: '$0.18', parseCalls: 14, parseCost: '$0.21', totalCost: '$0.43', parseAccuracy: 94 },
+      lyons:   { recCalls: 0,  recCost: '$0.00', parseCalls: 0,  parseCost: '$0.00', totalCost: '$0.00', parseAccuracy: null },
+    };
+
+    // ── Screen Config — module-level constants ────────────────────────────────
+    // Keys match prototype nav screen IDs — used as localStorage bridge payload
+    const SCREEN_GROUPS = [
+      { label: 'Daily Ops', color: 'blue', screens: [
+        { key: 'cash-register', label: 'Cash Register',      desc: "Treasurer's daily bank ledger — primary tool" },
+        { key: 'forecast',      label: 'Cash Flow Forecast', desc: 'Weekly cash position + payroll & debt tab' },
+      ]},
+      { label: 'Reconciliation', color: 'teal', screens: [
+        { key: 'uploads',    label: 'Upload Statements', desc: 'AI-parsed custodian PDFs' },
+        { key: 'blackbook',  label: 'Black Book',        desc: '3-way TTO reconciliation' },
+        { key: 'monthclose', label: 'Month-End Close',   desc: '9-step gated month-end workflow' },
+        { key: 'accrued',    label: 'Interest Received', desc: 'Morning status board — period view of interest receipts' },
+      ]},
+      { label: 'Investments', color: 'indigo', screens: [
+        { key: 'maturities',     label: 'Maturity Calendar',       desc: 'CD/bond maturities + reinvestment workflow' },
+        { key: 'portfolio',      label: 'Portfolio',                desc: 'Investment portfolio summary with compliance' },
+        { key: 'investable',     label: 'Investable Cash',          desc: 'Cash available for deployment' },
+        { key: 'compliance',     label: 'Compliance Rules',         desc: 'Exhibit A + sector concentration' },
+        { key: 'new-investment', label: 'New Investment',           desc: 'Record purchases with Cash Register entry preview' },
+        { key: 'decision-log',   label: 'Decision Log',             desc: 'Audit trail of investment decisions' },
+      ]},
+      { label: 'Quarterly Cycle', color: 'purple', screens: [
+        { key: 'tdf',        label: 'TDF Calculator',         desc: 'Quarterly interest distribution to districts' },
+        { key: 'tax-alloc',  label: 'Tax Allocation Engine',  desc: 'Cook County property tax allocation' },
+        { key: 'boardreport',label: 'Board Report',           desc: 'Quarterly compliance + portfolio report' },
+      ]},
+      { label: 'Config', color: 'gray', screens: [
+        { key: 'institutions', label: 'Authorized Institutions', desc: '18 institutions (16 active · 2 matured) + parser config' },
+        { key: 'settings',     label: 'Settings',                desc: 'District fund config + system parameters' },
+      ]},
+    ];
+    const GROUP_BG = {
+      blue:   'bg-blue-50 border-blue-100',     teal:   'bg-teal-50 border-teal-100',
+      indigo: 'bg-indigo-50 border-indigo-100', purple: 'bg-purple-50 border-purple-100',
+      amber:  'bg-amber-50 border-amber-100',   gray:   'bg-gray-50 border-gray-200',
+    };
+    const GROUP_LABEL = {
+      blue:   'text-blue-700',   teal:   'text-teal-700',   indigo: 'text-indigo-700',
+      purple: 'text-purple-700', amber:  'text-amber-700',  gray:   'text-gray-600',
+    };
+    // Ops role default visibility per client — live/onboarding only; niles is prospect
+    const SCREEN_CONFIG_SEED = {
+      proviso: {
+        'cash-register': true,  'forecast': true,
+        'uploads': true,        'blackbook': true,    'monthclose': true,  'accrued': true,
+        'maturities': true,
+        'portfolio': false,     'investable': false,
+        'compliance': false,    'new-investment': false, 'decision-log': false,
+        'tdf': false,           'tax-alloc': false,   'boardreport': false,
+        'institutions': false,  'settings': false,
+      },
+      lyons: {
+        'cash-register': true,  'forecast': true,
+        'uploads': true,        'blackbook': true,    'monthclose': false, 'accrued': false,
+        'maturities': false,
+        'portfolio': false,     'investable': false,
+        'compliance': false,    'new-investment': false, 'decision-log': false,
+        'tdf': false,           'tax-alloc': false,   'boardreport': false,
+        'institutions': false,  'settings': false,
+      },
+    };
+
+    const AUDIT_LOG = [
+      { ts: 'Today 9:14 AM', clientId: 'proviso', user: 'Paul Bellisario', action: 'Viewed Investable Cash', screen: 'Investable Cash', detail: '3 new recommendations shown' },
+      { ts: 'Today 9:02 AM', clientId: 'proviso', user: 'Hope Allen', action: 'Uploaded Custodian Statement', screen: 'Upload Statements', detail: 'First Horizon March 2026 — 16 positions, 0 errors' },
+      { ts: 'Today 8:31 AM', clientId: 'proviso', user: 'Paul Bellisario', action: 'Recorded investment decision', screen: 'Decision Log', detail: 'First Horizon CD $4.1M at 4.29% — AI-recommended, accepted' },
+      { ts: 'Today 8:14 AM', clientId: 'proviso', user: 'Paul Bellisario', action: 'Logged in', screen: 'Dashboard', detail: 'Login from 204.91.x.x · MFA verified' },
+    ];
+
+    const AI_RECS = [
+      { date: 'Mar 5, 2026', clientId: 'proviso', type: 'CD', institution: 'First Horizon', amount: 4.1, rate: 4.29, term: '12 months', source: 'AI', outcome: 'Accepted', confidence: 94 },
+      { date: 'Feb 12, 2026', clientId: 'proviso', type: 'Money Market', institution: 'Illinois Funds', amount: 8.0, rate: 3.885, term: 'Rolling', source: 'AI', outcome: 'Accepted', confidence: 91 },
+      { date: 'Feb 3, 2026', clientId: 'proviso', type: 'CD', institution: 'Republic Bank', amount: 2.0, rate: 3.75, term: '6 months', source: 'AI', outcome: 'Rejected', confidence: 78, rejectReason: 'Paul preferred longer term' },
+      { date: 'Jan 28, 2026', clientId: 'proviso', type: 'Agency Bond', institution: 'First Horizon Securities', amount: 3.5, rate: 3.77, term: '18 months', source: 'AI', outcome: 'Accepted', confidence: 88 },
+      { date: 'Jan 15, 2026', clientId: 'proviso', type: 'CD', institution: 'AMAL Bank', amount: 1.5, rate: 4.00, term: '6 months', source: 'AI', outcome: 'Accepted', confidence: 85 },
+    ];
+
+    const ANNOUNCEMENTS = [
+      { id: 1, title: 'March Maintenance Window', body: 'Tenor will be down for maintenance on March 28 from 2:00–4:00 AM CT. No action required.', audience: 'All Clients', channel: 'In-App Banner', sent: 'Mar 20, 2026', status: 'delivered' },
+      { id: 2, title: 'New Feature: Collateralization Tracking', body: 'We\'ve added automatic collateralization tracking to the Compliance Rules screen. All public deposits >$250K are now verified against pledged collateral per ILCS 30/235 §5.', audience: 'All Clients', channel: 'In-App Banner + Email', sent: 'Mar 15, 2026', status: 'delivered' },
+      { id: 3, title: 'Reminder: Q1 TDF Allocation Due', body: 'Q1 2026 TDF allocation is due by March 31. Please complete your quarterly run in the TDF Calculator.', audience: 'Proviso Township', channel: 'In-App Banner', sent: 'Mar 10, 2026', status: 'delivered' },
+    ];
+
+    const ONBOARDING_STEPS = [
+      { step: 1, name: 'Client Profile', desc: 'Organization info, treasurer details, contract signed', status: 'complete', date: 'Feb 1, 2026' },
+      { step: 2, name: 'User Accounts', desc: 'Create treasurer + staff logins, assign roles, MFA setup', status: 'complete', date: 'Feb 3, 2026' },
+      { step: 3, name: 'ERP Integration', desc: 'Tyler Tech InfoLink setup — confirm Fund Balance (monthly), Payroll Schedule (biweekly), Operating Statement (monthly) scheduled delivery to proviso.ttreports@holicow.ai. Test CSV ingestion parsing.', status: 'in_progress', date: 'In progress' },
+      { step: 4, name: 'Bank Connections', desc: 'Configure upload templates for each bank, test with sample file', status: 'pending', date: '—' },
+      { step: 5, name: 'Institution Import', desc: 'Load all investment institutions, Exhibit A limits, categories', status: 'pending', date: '—' },
+      { step: 6, name: 'Historical Data', desc: 'Import 12 months of investment register and fund balance history', status: 'pending', date: '—' },
+      { step: 7, name: 'Go-Live Validation', desc: 'Sign-off checklist, parallel run with existing tools, launch', status: 'pending', date: '—' },
+    ];
+
+    const SETUP_STEPS = [
+      { step: 1, title: 'Provision Tyler Tech InfoLink', status: 'complete', detail: 'Holicow email address confirmed with Tyler Tech support. InfoLink scheduled reports configured: Fund Balance (monthly after close), Payroll Schedule (biweekly), Operating Statement (monthly). Delivered to proviso.ttreports@holicow.ai.', owner: ADMIN_USER.name, done: 'Mar 10, 2026' },
+      { step: 2, title: 'Configure Fund Balance Report Template', status: 'complete', detail: 'Fund 10–90, Revenue (type 4) + Expense (type 5) totals per district. CSV headers mapped to Tenor ingestion schema.', owner: ADMIN_USER.name, done: 'Mar 12, 2026' },
+      { step: 3, title: 'Bank Statement Upload — Republic Bank', status: 'complete', detail: 'Manual CSV download confirmed. No SFTP, no AI. Paul downloads 3 CSV files from Republic Bank portal each morning (#0723 Main, #7661 NOW, #0936 Invest). Tenor CSV Parser — deterministic, structured column mapping.', owner: ADMIN_USER.name, done: 'Mar 14, 2026' },
+      { step: 4, title: 'Bank Statement Upload — First Horizon', status: 'complete', detail: `GetDocument PDF. ${ADMIN_USER.name} mapped safekeeping statement columns to CD register schema. Dec 2025: 16 brokered CDs. Jan 2026+: CDs + FHLB/FFCB agency bonds (rolling positions).`, owner: ADMIN_USER.name, done: 'Mar 14, 2026' },
+      { step: 5, title: 'Bank Statement Upload — All Other Custodians', status: 'in-progress', detail: '9 of 12 remaining institutions mapped. Pending: AMAL Bank, Liberty Bank, Pan Am Bank.', owner: ADMIN_USER.name, done: null },
+      { step: 6, title: 'Validate AI Parse Results vs. Black Book', status: 'pending', detail: 'Run 3 months of historical statements through parser. Compare AI-extracted totals against Hope\'s manual Black Book. Target: <0.1% variance.', owner: 'Holicow + Hope Allen', done: null },
+      { step: 7, title: 'Go-Live Signoff', status: 'pending', detail: `Paul Bellisario and Hope Allen sign off on reconciliation accuracy. ${ADMIN_USER.name} confirms live monitoring is active.`, owner: 'Paul Bellisario', done: null },
+    ];
+
+    const PARSER_CONFIGS = [
+      { id: 'pc1',  clientId: 'proviso', source: 'Tyler Tech InfoLink',         format: 'CSV (scheduled email)', parser: 'CSV Parser v2',         fields: 'Fund (10–90), Rev/Exp Type, Amount (TTO totals)',         status: 'active',  lastTested: 'Mar 25, 2026' },
+      { id: 'pc2',  clientId: 'proviso', source: 'Republic Bank #0723',         format: 'CSV (daily download)',  parser: 'CSV Parser (deterministic)',         fields: 'Date, Description, Debit, Credit, Balance',         status: 'active',  lastTested: 'Mar 28, 2026' },
+      { id: 'pc2b', clientId: 'proviso', source: 'Republic Bank #0936',         format: 'CSV (daily download)',  parser: 'CSV Parser (deterministic)',         fields: 'Date, Description, Debit, Credit, Balance',         status: 'active',  lastTested: 'Mar 28, 2026' },
+      { id: 'pc3',  clientId: 'proviso', source: 'Republic Bank #7661',         format: 'CSV (daily download)',  parser: 'CSV Parser (deterministic)',         fields: 'Open Bal, Deposits, Withdrawals, Interest, Close Bal',         status: 'active',  lastTested: 'Mar 28, 2026' },
+      { id: 'pc3b', clientId: 'proviso', source: 'Republic Bank #5212',         format: 'CSV (daily download)',  parser: 'CSV Parser (deterministic)',         fields: 'Open Bal, Deposits, Withdrawals, Interest, Close Bal',         status: 'pending', lastTested: null },
+      { id: 'pc4',  clientId: 'proviso', source: 'First Horizon (safekeeping)',         format: 'PDF (manual upload)',   parser: 'AI Statement Parser',         fields: 'CUSIP, Description, Par, Market Value, Accrued Int.',         status: 'active',  lastTested: 'Mar 18, 2026' },
+      { id: 'pc5',  clientId: 'proviso', source: 'AMAL Bank',         format: 'PDF (manual upload)',   parser: 'AI Statement Parser',         fields: 'Account, Date, Description, Amount, Balance',         status: 'pending', lastTested: null },
+      { id: 'pc6',  clientId: 'proviso', source: 'Liberty Bank',         format: 'PDF (manual upload)',   parser: 'AI Statement Parser',         fields: 'Account, Date, Description, Amount, Balance',         status: 'pending', lastTested: null },
+    ];
+
+    // ============ COMPONENT: IntegrationMonitor ============
+    function IntegrationMonitor() {
+      const [intTab, setIntTab] = React.useState('monitor');
+      const [selectedIntegration, setSelectedIntegration] = useState(null);
+      const [filterClient, setFilterClient] = useState('all');
+      const [setupClient, setSetupClient] = useState('proviso'); // drives Setup + Parser tabs
+
+      const filtered = filterClient === 'all' ? INTEGRATIONS : INTEGRATIONS.filter(i => i.clientId === filterClient);
+      const healthyCount = filtered.filter(i => i.status === 'healthy').length;
+      const warningCount = filtered.filter(i => i.status === 'warning').length;
+      const setupCount = filtered.filter(i => i.status === 'setup').length;
+
+      return (
+        <div>
+          {/* Tab Bar */}
+          <div className="flex gap-1 mb-6 border-b border-gray-200 pb-0">
+            {[
+              { id: 'monitor',  label: 'Live Monitor' },
+              { id: 'setup',    label: 'Setup Workflow' },
+              { id: 'parser',   label: 'Parser Config' },
+            ].map(t => (
+              <button
+                key={t.id}
+                onClick={() => setIntTab(t.id)}
+                className={`px-5 py-2.5 text-sm font-medium border-b-2 -mb-px transition ${intTab === t.id ? 'border-[var(--purple)] text-[var(--purple)]' : 'border-transparent text-gray-600 hover:text-gray-900'}`}
+              >{t.label}</button>
+            ))}
+          </div>
+
+          {/* Setup Workflow Tab */}
+          {intTab === 'setup' && (
+            <div>
+              <div className="flex gap-2 mb-4">
+                {CLIENTS.filter(c => c.status !== 'prospect').map(c => (
+                  <button key={c.id} onClick={() => setSetupClient(c.id)}
+                    className={`px-4 py-2 rounded-lg font-medium text-sm transition ${setupClient === c.id ? 'pill-active' : 'pill-inactive'}`}>
+                    {c.shortName}
+                    {c.status === 'onboarding' && <span className="ml-2 badge badge-amber">Onboarding</span>}
+                  </button>
+                ))}
+              </div>
+              <div className="notice-info mb-6">
+                Integration setup managed by {ADMIN_USER.name} ({ADMIN_USER.title}). Showing steps for {CLIENTS.find(c => c.id === setupClient)?.shortName}.
+              </div>
+              {setupClient !== 'proviso' ? (
+                <div className="text-center py-16" style={{color:'var(--text-muted)'}}>
+                  <div className="text-sm font-medium mb-1">{CLIENTS.find(c=>c.id===setupClient)?.shortName} — setup workflow will populate as onboarding progresses.</div>
+                  <div className="text-xs" style={{color:'var(--ink-400)'}}>Current status: {CLIENTS.find(c=>c.id===setupClient)?.status}</div>
+                </div>
+              ) : (
+              <div className="space-y-3">
+                {SETUP_STEPS.map(s => (
+                  <div key={s.step} className="bg-white rounded-lg shadow-sm p-5" style={{border:'1px solid var(--border-default)',borderLeftWidth:3,borderLeftColor:s.status==='complete'?'var(--success)':s.status==='in-progress'?'var(--warning)':'var(--border-default)'}}>
+                    <div className="flex items-start gap-4">
+                      <div className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold" style={{
+                          background: s.status === 'complete' ? 'var(--success-bg)' : s.status === 'in-progress' ? 'var(--warning-bg)' : 'var(--ink-100)',
+                          color: s.status === 'complete' ? 'var(--success)' : s.status === 'in-progress' ? 'var(--warning)' : 'var(--text-muted)',
+                        }}>
+                        {s.status === 'complete' ? s.step : s.step}
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="font-semibold text-gray-800">{s.title}</span>
+                          <span className={s.status === 'complete' ? 'badge badge-green' : s.status === 'in-progress' ? 'badge badge-amber' : 'badge badge-gray'}>
+                            {s.status === 'complete' ? 'Complete' : s.status === 'in-progress' ? 'In Progress' : 'Pending'}
+                          </span>
+                        </div>
+                        <p className="text-sm text-gray-600 mb-2">{s.detail}</p>
+                        <div className="flex gap-4 text-xs text-gray-500">
+                          <span>Owner: {s.owner}</span>
+                          {s.done && <span>Completed: {s.done}</span>}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              )}
+            </div>
+          )}
+
+          {/* Parser Config Tab */}
+          {intTab === 'parser' && (
+            <div>
+              <div className="flex gap-2 mb-4">
+                {CLIENTS.filter(c => c.status !== 'prospect').map(c => (
+                  <button key={c.id} onClick={() => setSetupClient(c.id)}
+                    className={`px-4 py-2 rounded-lg font-medium text-sm transition ${setupClient === c.id ? 'pill-active' : 'pill-inactive'}`}>
+                    {c.shortName}
+                  </button>
+                ))}
+              </div>
+              <div className="notice-warn mb-6">
+                Republic Bank uses daily CSV download — deterministic parser, no AI. Investment custodian PDFs (First Horizon, IIIT, Insperex, etc.) use AI Statement Parser. Tyler Tech InfoLink delivers CSV via scheduled email.
+              </div>
+              {(() => { const parsers = PARSER_CONFIGS.filter(pc => pc.clientId === setupClient); return parsers.length === 0 ? (
+                <div className="text-center py-16" style={{color:'var(--text-muted)'}}>
+                  <div className="text-sm font-medium">No parser configurations for {CLIENTS.find(c=>c.id===setupClient)?.shortName} yet.</div>
+                </div>
+              ) : (
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                <table className="admin-table w-full">
+                  <thead>
+                    <tr>
+                      <th>Source</th>
+                      <th>Format</th>
+                      <th>Parser</th>
+                      <th>Fields Extracted</th>
+                      <th>Status</th>
+                      <th>Last Tested</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {parsers.map(pc => (
+                      <tr key={pc.id}>
+                        <td className="font-medium">{pc.source}</td>
+                        <td className="text-xs" style={{color:'var(--text-muted)'}}>{pc.format}</td>
+                        <td className="text-xs" style={{color:'var(--text-muted)'}}>{pc.parser}</td>
+                        <td className="text-xs" style={{color:'var(--text-muted)'}}>{pc.fields}</td>
+                        <td>
+                          <span className={pc.status === 'active' ? 'badge badge-green' : 'badge badge-gray'}>
+                            {pc.status === 'active' ? 'Active' : 'Pending'}
+                          </span>
+                        </td>
+                        <td className="text-xs" style={{color:'var(--text-muted)'}}>{pc.lastTested || '—'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              );})()}
+            </div>
+          )}
+
+          {intTab === 'monitor' && (<div>
+          {/* Metrics */}
+          <div className="grid grid-cols-4 gap-4 mb-6">
+            <div className="metric-card">
+              <div className="text-sm text-gray-600 font-medium">Integrations</div>
+              <div className="text-2xl font-bold text-gray-900 mt-1">{filtered.length}</div>
+            </div>
+            <div className="metric-card">
+              <div className="text-sm text-gray-600 font-medium">Healthy</div>
+              <div className="text-2xl font-bold mt-1" style={{color:'var(--success)'}}>{healthyCount}</div>
+            </div>
+            <div className="metric-card">
+              <div className="text-sm text-gray-600 font-medium">Warning</div>
+              <div className="text-2xl font-bold mt-1" style={{color:'var(--warning)'}}>{warningCount}</div>
+            </div>
+            <div className="metric-card">
+              <div className="text-sm text-gray-600 font-medium">Setup</div>
+              <div className="text-2xl font-bold mt-1" style={{color:'var(--text-muted)'}}>{setupCount}</div>
+            </div>
+          </div>
+
+          {/* Filters — data-driven from CLIENTS */}
+          <div className="flex gap-2 mb-6">
+            {[{id:'all',label:'All Clients'},...CLIENTS.filter(c=>c.status!=='prospect').map(c=>({id:c.id,label:c.shortName}))].map(f => (
+              <button
+                key={f.id}
+                onClick={() => setFilterClient(f.id)}
+                className={`px-3 py-2 text-sm font-medium rounded transition ${filterClient === f.id ? 'pill-active' : 'pill-inactive'}`}
+              >
+                {f.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Table */}
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+            <table className="admin-table w-full">
+              <thead>
+                <tr>
+                  <th>Client</th>
+                  <th>Integration</th>
+                  <th>Type</th>
+                  <th>Method</th>
+                  <th>Last Sync</th>
+                  <th>Status</th>
+                  <th>Records</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.map(int => (
+                  <tr key={int.id} className={`cursor-pointer ${int.status === 'warning' ? 'table-row-warning' : ''}`} onClick={() => setSelectedIntegration(int)}>
+                    <td>{CLIENTS.find(c=>c.id===int.clientId)?.shortName ?? int.clientId}</td>
+                    <td className="font-medium">{int.name}</td>
+                    <td style={{color:'var(--text-muted)'}}>{int.type}</td>
+                    <td style={{color:'var(--text-muted)'}}>{int.method || '—'}</td>
+                    <td style={{color:'var(--text-muted)'}}>{int.lastSync}</td>
+                    <td>
+                      <span className={int.status === 'healthy' ? 'badge badge-green' : int.status === 'warning' ? 'badge badge-amber' : 'badge badge-gray'}>
+                        {int.status === 'healthy' ? 'Healthy' : int.status === 'warning' ? 'Warning' : 'Setup'}
+                      </span>
+                    </td>
+                    <td style={{color:'var(--text-muted)'}}>{int.rows}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Detail Card */}
+          {selectedIntegration && (
+            <div className="mt-6 bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+              <h3 className="admin-section-title mb-4">{selectedIntegration.name}</h3>
+              <div className="grid grid-cols-2 gap-6 mb-6">
+                <div>
+                  <p className="text-sm text-gray-500 mb-1">Vendor</p>
+                  <p className="font-semibold text-gray-800">{selectedIntegration.vendor}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500 mb-1">Type</p>
+                  <p className="font-semibold text-gray-800">{selectedIntegration.type}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500 mb-1">Last Sync</p>
+                  <p className="font-semibold text-gray-800">{selectedIntegration.lastSync}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500 mb-1">Next Sync</p>
+                  <p className="font-semibold text-gray-800">{selectedIntegration.nextSync}</p>
+                </div>
+              </div>
+              {selectedIntegration.note && (
+                <div className="notice-warn mb-6">
+                  <p className="text-sm text-gray-800">{selectedIntegration.note}</p>
+                </div>
+              )}
+              <div className="flex gap-2">
+                <button className="admin-btn-primary">Test Connection</button>
+                <button className="admin-btn-primary">Refresh Now</button>
+                <button className="admin-btn-ghost">Edit Config</button>
+              </div>
+            </div>
+          )}
+
+          <p className="mt-6 text-xs text-gray-500">Auto-refresh: every 60 seconds · Last refreshed: Today 9:18 AM</p>
+          </div>)}
+        </div>
+      );
+    }
+
+    // ============ COMPONENT: UserManagement ============
+    function UserManagement() {
+      const [filterClient, setFilterClient] = useState('all');
+      const [showNewUserForm, setShowNewUserForm] = useState(false);
+
+      const filtered = filterClient === 'all' ? USERS : USERS.filter(u => u.clientId === filterClient);
+      const mfaEnabled = filtered.filter(u => u.mfa).length;
+      const uniqueClientCount = new Set(filtered.map(u => u.clientId)).size;
+
+      return (
+        <div>
+          {/* Metrics */}
+          <div className="grid grid-cols-4 gap-4 mb-6">
+            <div className="metric-card">
+              <div className="text-sm text-gray-600 font-medium">Active Users</div>
+              <div className="text-2xl font-bold text-gray-900 mt-1">{filtered.length}</div>
+            </div>
+            <div className="metric-card">
+              <div className="text-sm text-gray-600 font-medium">Clients</div>
+              <div className="text-2xl font-bold text-gray-900 mt-1">{uniqueClientCount}</div>
+            </div>
+            <div className="metric-card">
+              <div className="text-sm text-gray-600 font-medium">MFA Enabled</div>
+              <div className="text-2xl font-bold text-green-600 mt-1">{mfaEnabled}</div>
+            </div>
+            <div className="metric-card">
+              <div className="text-sm text-gray-600 font-medium">MFA Missing</div>
+              <div className="text-2xl font-bold text-amber-600 mt-1">{filtered.length - mfaEnabled}</div>
+            </div>
+          </div>
+
+          {/* Filter & Add Button */}
+          <div className="flex justify-between items-center mb-6">
+            <div className="flex gap-2">
+              {[{id:'all',label:'All Clients'},...CLIENTS.map(c=>({id:c.id,label:c.shortName}))].map(f => (
+                <button
+                  key={f.id}
+                  onClick={() => setFilterClient(f.id)}
+                  className={`px-3 py-2 text-sm font-medium rounded transition ${filterClient === f.id ? 'pill-active' : 'pill-inactive'}`}
+                >
+                  {f.label}
+                </button>
+              ))}
+            </div>
+            <button onClick={() => setShowNewUserForm(!showNewUserForm)} className="admin-btn-primary">+ Add User</button>
+          </div>
+
+          {/* New User Form */}
+          <div className={`collapsible-form mb-6 ${showNewUserForm ? 'open' : ''}`}>
+            <div className="notice-info">
+              <h3 className="font-semibold mb-4" style={{color:'var(--ink-800)',fontFamily:"'Montserrat',-apple-system,sans-serif"}}>New User</h3>
+              <div className="grid grid-cols-2 gap-4">
+                <input type="text" placeholder="Full Name" className="admin-input" />
+                <input type="email" placeholder="Email" className="admin-input" />
+                <select className="admin-input">
+                  <option value="">Select Role</option>
+                  {ROLES.map(r => <option key={r.id} value={r.id}>{r.label} — {r.description}</option>)}
+                </select>
+                <select className="admin-input">
+                  <option value="">Select Client</option>
+                  {CLIENTS.filter(c => c.status !== 'prospect').map(c => <option key={c.id} value={c.id}>{c.shortName} ({c.status})</option>)}
+                </select>
+              </div>
+              <div className="flex gap-2 mt-4">
+                <button className="admin-btn-primary">Create User</button>
+                <button onClick={() => setShowNewUserForm(false)} className="admin-btn-secondary">Cancel</button>
+              </div>
+            </div>
+          </div>
+
+          {/* Table */}
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+            <table className="admin-table w-full">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Role</th>
+                  <th>Client</th>
+                  <th>Last Login</th>
+                  <th>MFA</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.map(user => (
+                  <tr key={user.id} style={user.mfa === false ? {background:'var(--warning-bg)'} : {}}>
+                    <td className="font-medium">{user.name}</td>
+                    <td style={{color:'var(--text-muted)'}}>{user.email}</td>
+                    <td><span className={`badge ${(ROLES.find(r => r.id === user.roleId) || ROLES[1]).badgeClass}`}>{(ROLES.find(r => r.id === user.roleId) || ROLES[1]).label}</span></td>
+                    <td style={{color:'var(--text-muted)'}}>{CLIENTS.find(c=>c.id===user.clientId)?.shortName ?? user.clientId}</td>
+                    <td style={{color:'var(--text-muted)'}}>{user.lastLogin}</td>
+                    <td>
+                      <span className={user.mfa ? 'badge badge-green' : 'badge badge-amber'}>
+                        {user.mfa ? 'MFA' : 'No MFA'}
+                      </span>
+                    </td>
+                    <td>
+                      <div className="flex items-center gap-2">
+                        <button className="admin-btn-ghost text-xs px-2 py-1">Send Reset Link</button>
+                        <button className="admin-btn-ghost-danger">Revoke</button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <p className="mt-6 text-xs text-gray-500">MFA required for Treasurer accounts. Ops Manager accounts: optional in V1.</p>
+        </div>
+      );
+    }
+
+    // ============ COMPONENT: AIPerformance ============
+    function AIPerformance() {
+      const [selectedClient, setSelectedClient] = React.useState('proviso');
+      const clientRecs = AI_RECS.filter(r => r.clientId === selectedClient);
+      const acceptedCount = clientRecs.filter(r => r.outcome === 'Accepted').length;
+      const acceptanceRate = clientRecs.length > 0 ? Math.round((acceptedCount / clientRecs.length) * 100) : 0;
+      const avgConfidence = clientRecs.length > 0 ? Math.round(clientRecs.reduce((sum, r) => sum + r.confidence, 0) / clientRecs.length) : 0;
+      const deployedM = clientRecs.filter(r => r.outcome === 'Accepted').reduce((s, r) => s + r.amount, 0);
+
+      return (
+        <div>
+          {/* Client Selector */}
+          <div className="flex gap-2 mb-6">
+            {CLIENTS.filter(c => c.status !== 'prospect').map(c => (
+              <button key={c.id} onClick={() => setSelectedClient(c.id)}
+                className={`px-4 py-2 rounded-lg font-medium text-sm transition ${selectedClient === c.id ? 'pill-active' : 'pill-inactive'}`}>
+                {c.shortName}
+                {!AI_RECS.some(r => r.clientId === c.id) && <span className="ml-2 badge badge-amber">No data</span>}
+              </button>
+            ))}
+          </div>
+          {/* Metrics */}
+          <div className="grid grid-cols-4 gap-4 mb-6">
+            <div className="metric-card">
+              <div className="text-sm text-gray-600 font-medium">Recommendations</div>
+              <div className="text-2xl font-bold text-gray-900 mt-1">{clientRecs.length}</div>
+            </div>
+            <div className="metric-card">
+              <div className="text-sm text-gray-600 font-medium">Accepted</div>
+              <div className="text-2xl font-bold mt-1" style={{color:'var(--success)'}}>{acceptedCount} ({acceptanceRate}%)</div>
+            </div>
+            <div className="metric-card">
+              <div className="text-sm text-gray-600 font-medium">Statements Parsed</div>
+              <div className="text-2xl font-bold text-gray-900 mt-1">{AI_USAGE_SEED[selectedClient]?.parseCalls ?? '—'}</div>
+            </div>
+            <div className="metric-card">
+              <div className="text-sm text-gray-600 font-medium">Avg Parse Accuracy</div>
+              <div className="text-2xl font-bold mt-1" style={{color:'var(--brand-indigo)'}}>{AI_USAGE_SEED[selectedClient]?.parseAccuracy != null ? AI_USAGE_SEED[selectedClient].parseAccuracy + '%' : '—'}</div>
+            </div>
+          </div>
+
+          {/* Section A: Recommendation Log */}
+          <h2 className="admin-section-title mb-4">Recommendation Log</h2>
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden mb-8">
+            <table className="admin-table w-full">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Type</th>
+                  <th>Institution</th>
+                  <th>Amount</th>
+                  <th>Rate</th>
+                  <th>Term</th>
+                  <th>Confidence</th>
+                  <th>Outcome</th>
+                </tr>
+              </thead>
+              <tbody>
+                {clientRecs.length === 0 ? (
+                  <tr><td colSpan={8} className="text-center py-8" style={{color:'var(--text-muted)'}}>No AI recommendations for {CLIENTS.find(c => c.id === selectedClient)?.shortName} yet.</td></tr>
+                ) : clientRecs.map((rec, i) => (
+                  <tr key={i}>
+                    <td>{rec.date}</td>
+                    <td className="font-medium">{rec.type}</td>
+                    <td style={{color:'var(--text-muted)'}}>{rec.institution}</td>
+                    <td className="font-semibold">${rec.amount.toFixed(1)}M</td>
+                    <td className="font-semibold">{rec.rate.toFixed(2)}%</td>
+                    <td style={{color:'var(--text-muted)'}}>{rec.term}</td>
+                    <td>
+                      <div className="flex items-center gap-2">
+                        <div className="w-16 h-1.5 rounded-full overflow-hidden" style={{background:'var(--ink-200)'}}>
+                          <div className="confidence-bar-fill" style={{ width: `${rec.confidence}%` }}></div>
+                        </div>
+                        <span className="text-xs font-semibold">{rec.confidence}%</span>
+                      </div>
+                    </td>
+                    <td><span className={rec.outcome === 'Accepted' ? 'badge badge-green' : 'badge badge-red'}>{rec.outcome}</span>{rec.rejectReason && <div className="text-xs mt-0.5" style={{color:'var(--text-muted)'}}>{rec.rejectReason}</div>}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="notice-success mb-8">
+            <p><strong>Acceptance Rate:</strong> {clientRecs.length > 0 ? acceptanceRate + '%' : '—'} &middot; <strong>Avg Confidence:</strong> {clientRecs.length > 0 ? avgConfidence + '%' : '—'} &middot; <strong>Capital Deployed via AI Recs:</strong> {deployedM > 0 ? '~$' + deployedM.toFixed(1) + 'M' : '$0'}</p>
+          </div>
+        </div>
+      );
+    }
+
+    const ACTION_CATEGORIES = {
+      'login':      ['Logged in', 'MFA verified', 'Session expired', 'Password reset'],
+      'investment': ['Recorded investment decision', 'Approved AI recommendation', 'Dismissed AI recommendation'],
+      'export':     ['Downloaded JE CSV for Tyler Tech', 'Downloaded report'],
+      'upload':     ['Uploaded bank statement', 'Uploaded document', 'Uploaded Custodian Statement'],
+      'ai':         ['Asked Tenor', 'AI rec generated'],
+    };
+
+    // ============ COMPONENT: AuditLog ============
+    function AuditLog() {
+      const [filterClient, setFilterClient] = React.useState('all');
+      const [filterAction, setFilterAction] = React.useState('all');
+
+      const filtered = AUDIT_LOG.filter(log => {
+        const clientMatch = filterClient === 'all' || log.clientId === filterClient;
+        const actionMatch = filterAction === 'all' || (ACTION_CATEGORIES[filterAction]||[]).some(a => log.action.includes(a)) || log.action.toLowerCase().includes(filterAction);
+        return clientMatch && actionMatch;
+      });
+
+      const CLIENT_PILLS = [
+        { id: 'all', label: 'All Clients' },
+        ...CLIENTS.map(c => ({ id: c.id, label: c.shortName })),
+      ];
+      const ACTION_PILLS = [
+        { id: 'all',        label: 'All Actions' },
+        { id: 'login',      label: 'Login / Auth' },
+        { id: 'investment', label: 'Investment' },
+        { id: 'export',     label: 'JE Export' },
+        { id: 'upload',     label: 'Upload' },
+        { id: 'ai',         label: 'AI' },
+      ];
+
+      return (
+        <div>
+          {/* Filter Row 1 — Client */}
+          <div className="flex items-center gap-2 mb-3">
+            <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider w-14 flex-shrink-0">Client</span>
+            <div className="flex gap-1.5 flex-wrap">
+              {CLIENT_PILLS.map(p => (
+                <button key={p.id} onClick={() => setFilterClient(p.id)}
+                  className={`px-3 py-1.5 text-xs font-medium rounded-full transition ${filterClient === p.id ? 'pill-active' : 'pill-inactive'}`}
+                >{p.label}</button>
+              ))}
+            </div>
+          </div>
+          {/* Filter Row 2 — Action Type */}
+          <div className="flex items-center gap-2 mb-6">
+            <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider w-14 flex-shrink-0">Action</span>
+            <div className="flex gap-1.5 flex-wrap flex-1">
+              {ACTION_PILLS.map(p => (
+                <button key={p.id} onClick={() => setFilterAction(p.id)}
+                  className={`px-3 py-1.5 text-xs font-medium rounded-full transition ${filterAction === p.id ? 'pill-active' : 'pill-inactive'}`}
+                >{p.label}</button>
+              ))}
+            </div>
+            <button className="admin-btn-primary text-xs py-1.5 rounded-full flex-shrink-0">Export CSV</button>
+          </div>
+
+          {/* Table */}
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+            <table className="admin-table w-full">
+              <thead>
+                <tr>
+                  <th>Timestamp</th>
+                  <th>Client</th>
+                  <th>User</th>
+                  <th>Action</th>
+                  <th>Screen</th>
+                  <th>Detail</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.map((log, i) => (
+                  <tr key={i} style={i % 2 !== 0 ? {background:'var(--ink-100)'} : {}}>
+                    <td>{log.ts}</td>
+                    <td>{CLIENTS.find(c=>c.id===log.clientId)?.shortName ?? log.clientId}</td>
+                    <td>{log.user}</td>
+                    <td className="font-medium">{log.action}</td>
+                    <td style={{color:'var(--text-muted)'}}>{log.screen}</td>
+                    <td style={{color:'var(--text-muted)'}}>{log.detail}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="mt-6 flex justify-between items-center">
+            <p className="text-xs text-gray-500">Showing {filtered.length} of 1,247 events · Page 1 of 156</p>
+            <p className="text-xs text-gray-500">Audit logs retained for 7 years per government records requirements.</p>
+          </div>
+        </div>
+      );
+    }
+
+    // ============ COMPONENT: FeatureFlags ============
+    function FeatureFlags() {
+      const [selectedClient, setSelectedClient] = useState('proviso');
+      const [saveToast, setSaveToast] = useState(false);
+
+      // featureData moved to module-level FEATURE_FLAGS_SEED
+      const EMPTY_SECTIONS = { aiFeatures: [], workflowFeatures: [], commFeatures: [] };
+      const [toggleStates, setToggleStates] = useState(FEATURE_FLAGS_SEED[selectedClient] || EMPTY_SECTIONS);
+
+      const handleToggle = (section, key) => {
+        setToggleStates(prev => ({
+          ...prev,
+          [section]: prev[section].map(f => f.key === key ? { ...f, enabled: !f.enabled } : f),
+        }));
+      };
+
+      const handleBudgetChange = (value) => {
+        const newState = { ...toggleStates };
+        const feature = newState.aiFeatures.find(f => f.key === 'ask_tenor');
+        if (feature) feature.monthlyBudget = parseInt(value) || 0;
+        setToggleStates(newState);
+      };
+
+      const handleSave = () => {
+        // V1 wiring: prototype reads localStorage key holicow_feature_flags_{clientId} on mount
+        try { localStorage.setItem(`holicow_feature_flags_${selectedClient}`, JSON.stringify(toggleStates)); } catch(e) {}
+        setSaveToast(true);
+        setTimeout(() => setSaveToast(false), 3000);
+      };
+
+      const handleClientChange = (clientId) => {
+        setSelectedClient(clientId);
+        setToggleStates(FEATURE_FLAGS_SEED[clientId] || EMPTY_SECTIONS);
+      };
+
+      return (
+        <div>
+          {/* Toast */}
+          {saveToast && (
+            <div className="admin-toast">Changes saved</div>
+          )}
+
+          {/* Client Selector — live + onboarding only, driven from CLIENTS */}
+          <div className="flex gap-2 mb-6">
+            {CLIENTS.filter(c => c.status !== 'prospect').map(c => (
+              <button
+                key={c.id}
+                onClick={() => handleClientChange(c.id)}
+                className={`px-4 py-2 rounded-lg font-medium transition ${selectedClient === c.id ? 'pill-active' : 'pill-inactive'}`}
+              >
+                {c.shortName}
+                {!FEATURE_FLAGS_SEED[c.id] && <span className="ml-2 badge badge-amber">No config</span>}
+              </button>
+            ))}
+          </div>
+
+          {/* Feature Sections */}
+          <div className="space-y-6">
+            {/* AI Features */}
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+              <div className="flex items-center gap-2 mb-5">
+                <h3 className="admin-section-title">AI Features</h3>
+                
+              </div>
+              <div className="space-y-4">
+                {toggleStates.aiFeatures.map(feature => (
+                  <div key={feature.key} className="flex items-start justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50">
+                    <div className="flex-1">
+                      <p className="font-medium text-gray-800">{feature.name}</p>
+                      <p className="text-sm text-gray-600 mt-1">{feature.description}</p>
+                      {feature.key === 'ask_tenor' && feature.enabled && (
+                        <div className="mt-3 flex items-center gap-2">
+                          <label className="text-sm text-gray-700">Monthly query budget:</label>
+                          <input
+                            type="number"
+                            value={feature.monthlyBudget}
+                            onChange={(e) => handleBudgetChange(e.target.value)}
+                            className="admin-input w-20"
+                          />
+                        </div>
+                      )}
+                      <p className="text-xs mt-2" style={{color:'var(--text-muted)'}}>Last changed: {FEATURE_FLAGS_SEED[selectedClient]?.lastChangedAI ?? '—'} by {ADMIN_USER.name}</p>
+                    </div>
+                    <button
+                      onClick={() => handleToggle('aiFeatures', feature.key)}
+                      className="ml-4 px-3 py-2 rounded font-medium text-sm transition"
+                      style={{background: feature.enabled ? 'var(--success-bg)' : 'var(--ink-100)', color: feature.enabled ? 'var(--success)' : 'var(--text-muted)'}}
+                    >
+                      {feature.enabled ? 'ON' : 'OFF'}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Workflow Features */}
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+              <div className="flex items-center gap-2 mb-5">
+                <h3 className="admin-section-title">Workflow Features</h3>
+                
+              </div>
+              <div className="space-y-4">
+                {toggleStates.workflowFeatures.map(feature => (
+                  <div key={feature.key} className="flex items-start justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50">
+                    <div className="flex-1">
+                      <p className="font-medium text-gray-800">{feature.name}</p>
+                      <p className="text-sm text-gray-600 mt-1">{feature.description}</p>
+                      <p className="text-xs mt-2" style={{color:'var(--text-muted)'}}>Last changed: {FEATURE_FLAGS_SEED[selectedClient]?.lastChangedWorkflow ?? '—'} by {ADMIN_USER.name}</p>
+                    </div>
+                    <button
+                      onClick={() => handleToggle('workflowFeatures', feature.key)}
+                      className="ml-4 px-3 py-2 rounded font-medium text-sm transition"
+                      style={{background: feature.enabled ? 'var(--success-bg)' : 'var(--ink-100)', color: feature.enabled ? 'var(--success)' : 'var(--text-muted)'}}
+                    >
+                      {feature.enabled ? 'ON' : 'OFF'}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Communication Features */}
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+              <div className="flex items-center gap-2 mb-5">
+                <h3 className="admin-section-title">Communication Features</h3>
+                
+              </div>
+              <div className="space-y-4">
+                {toggleStates.commFeatures.map(feature => (
+                  <div key={feature.key} className="flex items-start justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50">
+                    <div className="flex-1">
+                      <p className="font-medium text-gray-800">{feature.name}</p>
+                      <p className="text-sm text-gray-600 mt-1">{feature.description}</p>
+                      <p className="text-xs mt-2" style={{color:'var(--text-muted)'}}>Last changed: {FEATURE_FLAGS_SEED[selectedClient]?.lastChangedComm ?? '—'} by {ADMIN_USER.name}</p>
+                    </div>
+                    <button
+                      onClick={() => handleToggle('commFeatures', feature.key)}
+                      className="ml-4 px-3 py-2 rounded font-medium text-sm transition"
+                      style={{background: feature.enabled ? 'var(--success-bg)' : 'var(--ink-100)', color: feature.enabled ? 'var(--success)' : 'var(--text-muted)'}}
+                    >
+                      {feature.enabled ? 'ON' : 'OFF'}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* AI Usage Summary — data-driven from AI_USAGE_SEED; budget from toggleStates */}
+            {(() => {
+              const usage = AI_USAGE_SEED[selectedClient] || { recCalls: 0, recCost: '$0.00', parseCalls: 0, parseCost: '$0.00', totalCost: '$0.00' };
+              const budget = toggleStates.aiFeatures?.find(f => f.key === 'ask_tenor')?.monthlyBudget ?? 0;
+              const askEnabled = toggleStates.aiFeatures?.find(f => f.key === 'ask_tenor')?.enabled ?? false;
+              return (
+            <div className="rounded-lg p-6 mb-6" style={{background:'var(--purple-faint)',border:'1px solid var(--purple-muted)'}}>
+              <h3 className="admin-section-title mb-4">AI Usage This Month</h3>
+              <div className="grid grid-cols-4 gap-4">
+                <div className="bg-white rounded-lg p-4" style={{border:'1px solid var(--border-default)'}}>
+                  <p className="text-sm font-medium" style={{color:'var(--ink-600)'}}>AI Recommendations</p>
+                  <p className="text-lg font-bold mt-1">{usage.recCalls} calls</p>
+                  <p className="text-xs mt-1" style={{color:'var(--text-muted)'}}>{usage.recCost}</p>
+                </div>
+                <div className="bg-white rounded-lg p-4" style={{border:'1px solid var(--border-default)'}}>
+                  <p className="text-sm font-medium" style={{color:'var(--ink-600)'}}>Ask Tenor</p>
+                  <p className="text-lg font-bold mt-1">{askEnabled ? `— of ${budget}` : 'Disabled'}</p>
+                  <p className="text-xs mt-1" style={{color:'var(--text-muted)'}}>queries / month</p>
+                </div>
+                <div className="bg-white rounded-lg p-4" style={{border:'1px solid var(--border-default)'}}>
+                  <p className="text-sm font-medium" style={{color:'var(--ink-600)'}}>Statement Parsing</p>
+                  <p className="text-lg font-bold mt-1">{usage.parseCalls} calls</p>
+                  <p className="text-xs mt-1" style={{color:'var(--text-muted)'}}>{usage.parseCost}</p>
+                </div>
+                <div className="rounded-lg p-4" style={{background:'var(--brand-indigo)',border:'1px solid rgba(255,255,255,0.12)'}}>
+                  <p className="text-sm font-medium text-white">Total AI Cost</p>
+                  <p className="text-lg font-bold text-white mt-1">{usage.totalCost}</p>
+                  <p className="text-xs mt-1" style={{color:'rgba(255,255,255,0.65)'}}>This month</p>
+                </div>
+              </div>
+            </div>
+              );
+            })()}
+          </div>
+
+          {/* Save Button */}
+          <div className="flex gap-2 mt-8">
+            <button onClick={handleSave} className="admin-btn-primary px-6">Save Changes</button>
+            <button className="admin-btn-secondary">Cancel</button>
+          </div>
+        </div>
+      );
+    }
+
+    // ============ MAIN APP ============
+    // ============ COMPONENT: ScreenConfig ============
+    function ScreenConfig() {
+      const [selectedClient, setSelectedClient] = React.useState('proviso');
+      const [saveToast, setSaveToast] = React.useState(false);
+
+      // SCREEN_GROUPS, GROUP_BG, GROUP_LABEL, SCREEN_CONFIG_SEED → module level
+      const EMPTY_SCREEN_MAP = Object.fromEntries(
+        SCREEN_GROUPS.flatMap(g => g.screens.map(s => [s.key, false]))
+      );
+      const [opsScreens, setOpsScreens] = React.useState(SCREEN_CONFIG_SEED[selectedClient] || EMPTY_SCREEN_MAP);
+
+      const handleClientChange = (clientId) => {
+        setSelectedClient(clientId);
+        setOpsScreens(SCREEN_CONFIG_SEED[clientId] || EMPTY_SCREEN_MAP);
+      };
+
+      const toggleScreen = (key) => {
+        setOpsScreens(prev => ({ ...prev, [key]: !prev[key] }));
+      };
+
+      const handleSave = () => {
+        // V1 wiring: prototype reads localStorage key holicow_screen_config_{clientId} on mount
+        // Keys match prototype nav screen ids; true = Ops role can see the screen
+        try { localStorage.setItem(`holicow_screen_config_${selectedClient}`, JSON.stringify(opsScreens)); } catch(e) {}
+        setSaveToast(true);
+        setTimeout(() => setSaveToast(false), 3000);
+      };
+
+      // GROUP_BG + GROUP_LABEL → module level
+      const totalScreens = SCREEN_GROUPS.reduce((n, g) => n + g.screens.length, 0);
+      const enabledCount = Object.values(opsScreens || {}).filter(Boolean).length;
+
+      return (
+        <div>
+          {saveToast && (
+            <div className="admin-toast">Screen config saved</div>
+          )}
+
+          {/* Client selector — live + onboarding only, driven from CLIENTS */}
+          <div className="flex gap-2 mb-6">
+            {CLIENTS.filter(c => c.status !== 'prospect').map(c => (
+              <button
+                key={c.id}
+                onClick={() => handleClientChange(c.id)}
+                className={`px-4 py-2 rounded-lg font-medium transition ${selectedClient === c.id ? 'pill-active' : 'pill-inactive'}`}
+              >
+                {c.shortName}
+              </button>
+            ))}
+          </div>
+
+          {/* Role header */}
+          <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-5 mb-6 flex items-start gap-6">
+            <div className="flex-1 space-y-3">
+              <div className="flex items-center gap-3">
+                <span className="badge badge-purple">Treasurer</span>
+                <span className="badge badge-purple">All {totalScreens} screens · always visible</span>
+                <span className="text-xs" style={{color:'var(--text-muted)'}}>{USERS.filter(u=>u.clientId===selectedClient&&u.roleId==='treasurer').map(u=>u.name).join(', ')} · not configurable</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="badge badge-blue">Ops Manager</span>
+                <span className={enabledCount >= 8 ? 'badge badge-green' : 'badge badge-amber'}>
+                  {enabledCount} of {totalScreens} screens enabled
+                </span>
+                <span className="text-xs" style={{color:'var(--text-muted)'}}>{USERS.filter(u=>u.clientId===selectedClient&&u.roleId==='ops').map(u=>u.name).join(', ')} · configurable per client</span>
+              </div>
+            </div>
+            <button
+              onClick={handleSave}
+              className="admin-btn-primary font-semibold whitespace-nowrap"
+            >
+              Save Config
+            </button>
+          </div>
+
+          {/* Screen groups */}
+          <div className="space-y-4">
+            {SCREEN_GROUPS.map(group => (
+              <div key={group.label} className={`rounded-lg border p-4 ${GROUP_BG[group.color]}`}>
+                <div className={`text-xs font-semibold uppercase tracking-wider mb-3 ${GROUP_LABEL[group.color]}`}>
+                  {group.label}
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  {group.screens.map(screen => (
+                    <div key={screen.key} className="bg-white rounded-lg border border-gray-200 p-3 hover:shadow-sm transition">
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm font-semibold text-gray-800">{screen.label}</div>
+                        <div className="text-xs text-gray-500 mt-0.5">{screen.desc}</div>
+                        <div className="mt-2 flex items-center gap-2">
+                          <span className="text-xs font-medium" style={{color:'var(--success)'}}>Treasurer ON</span>
+                          <span className="text-gray-300 text-xs">·</span>
+                          <span className="text-xs text-gray-500 font-medium">Ops:</span>
+                          <button
+                            onClick={() => toggleScreen(screen.key)}
+                            className="relative inline-flex h-5 w-9 flex-shrink-0 items-center rounded-full transition-colors"
+                            style={{background: opsScreens[screen.key] ? 'var(--success)' : 'var(--ink-300)'}}
+                          >
+                            <span className={`inline-block h-3 w-3 transform rounded-full bg-white shadow transition-transform ${opsScreens[screen.key] ? 'translate-x-5' : 'translate-x-1'}`} />
+                          </button>
+                          <span className="text-xs font-semibold" style={{color: opsScreens[screen.key] ? 'var(--success)' : 'var(--text-muted)'}}>
+                            {opsScreens[screen.key] ? 'ON' : 'OFF'}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+
+
+        </div>
+      );
+    }
+
+    function PlatformAdmin() {
+      const [activeScreen, setActiveScreen] = useState('users');
+
+      const navGroups = [
+        {
+          label: 'Client Setup',
+          items: [
+            { id: 'users',         label: 'User Accounts', icon: '' },
+            { id: 'integrations',  label: 'Integrations',  icon: '' },
+            { id: 'features',      label: 'Feature Flags', icon: '' },
+            { id: 'screen-config', label: 'Screen Config', icon: '' },
+          ]
+        },
+        {
+          label: 'Operations',
+          items: [
+            { id: 'ai-performance',  label: 'AI Performance',    icon: '' },
+            { id: 'audit-log',       label: 'Audit Log',         icon: '' },
+            { id: 'security-access', label: 'Security & Access', icon: '' },
+          ]
+        },
+      ];
+      const navItems = navGroups.flatMap(g => g.items);
+
+      const screenTitles = {
+        'users':          { title: 'User Accounts',            subtitle: 'Manage users across all client organizations' },
+        'integrations':   { title: 'Integration Monitor',      subtitle: 'Live connection status for all client integrations' },
+        'features':       { title: 'Feature Flags',            subtitle: 'Toggle features on/off per client tenant' },
+        'screen-config':  { title: 'Screen Configuration',     subtitle: 'Configure which screens each role can access per client' },
+        'ai-performance': { title: 'AI Performance Dashboard', subtitle: 'Investment recommendation accuracy and knowledge capture health' },
+        'audit-log':      { title: 'Platform Audit Log',       subtitle: 'Complete record of all user actions across all clients' },
+        'security-access':{ title: 'Security & Access',        subtitle: 'MFA status, session config, IP allowlisting, and credential management' },
+      };
+
+      const currentTitle = screenTitles[activeScreen];
+
+      return (
+        <div className="h-screen flex flex-col bg-gray-50">
+          {/* TOPBAR */}
+          <div className="h-14 bg-white px-6 flex items-center justify-between" style={{borderBottom:'1px solid var(--border-default)'}}>
+            <div className="flex items-center gap-3">
+              <span className="text-xs font-semibold uppercase tracking-widest" style={{color:'var(--ink-400)',fontFamily:T.fontDisplay}}>Internal Ops</span>
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2 px-3 py-1.5 bg-green-50 border border-green-200 rounded-full">
+                <div className="w-2 h-2 rounded-full animate-pulse" style={{background:'var(--success)'}} />
+                <span className="text-xs font-semibold text-green-700">All Systems Operational</span>
+              </div>
+              <div className="text-right">
+                <p className="text-sm font-semibold text-gray-800">{ADMIN_USER.name}</p>
+                <p className="text-xs text-gray-500">{ADMIN_USER.title}</p>
+              </div>
+              <div className="w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm" style={{background:'var(--purple-faint)',color:'var(--purple)',fontFamily:T.fontDisplay}}>{ADMIN_USER.initials}</div>
+            </div>
+          </div>
+
+          {/* MAIN LAYOUT */}
+          <div className="flex flex-1 overflow-hidden">
+            {/* SIDEBAR */}
+            <div className="w-60 text-white flex flex-col" style={{background:'var(--ink-900)'}}>
+              {/* Logo Area — white background so HCWordmark renders in full colour */}
+              <div className="px-5 py-4" style={{background:'var(--surface-card)',borderBottom:'1px solid var(--border-default)'}}>
+                <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:6}}>
+                  <div style={{background:'var(--purple)',borderRadius:4,padding:'2px 7px',display:'inline-flex',alignSelf:'flex-start'}}>
+                    <span style={{fontFamily:T.fontDisplay,fontSize:11,fontWeight:700,letterSpacing:'0.1em',color:'var(--surface-card)'}}>TENOR</span>
+                  </div>
+                </div>
+                <HCWordmark h={24} />
+                <div style={{marginTop:5,fontSize:11,color:'var(--ink-600)',fontFamily:T.fontBody,letterSpacing:'0.01em'}}>Platform Admin</div>
+              </div>
+
+              {/* Nav Items */}
+              <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+                {navGroups.map(group => (
+                  <div key={group.label} className="mb-4">
+                    <div className="px-4 py-1 text-xs font-semibold uppercase tracking-widest mb-1" style={{color:'rgba(255,255,255,0.50)',fontFamily:T.fontDisplay,letterSpacing:'0.08em'}}>{group.label}</div>
+                    {group.items.map(item => (
+                      <button
+                        key={item.id}
+                        onClick={() => setActiveScreen(item.id)}
+                        className={`sidebar-nav-item w-full text-left px-4 py-2.5 rounded-lg text-sm transition ${activeScreen === item.id ? 'active' : ''}`}
+                      >
+                        {item.label}
+                      </button>
+                    ))}
+                  </div>
+                ))}
+              </nav>
+
+              {/* Footer */}
+              <div className="px-6 py-4 text-xs" style={{borderTop:'1px solid rgba(255,255,255,0.07)',color:'rgba(255,255,255,0.30)'}}>
+                Platform Admin v1.7
+              </div>
+            </div>
+
+            {/* MAIN CONTENT */}
+            <div className="flex-1 flex flex-col overflow-hidden">
+              {/* Header */}
+              <div className="bg-white border-b border-gray-200 px-8 py-6">
+                <h1 className="text-2xl font-bold text-gray-900" style={{fontFamily:T.fontDisplay}}>{currentTitle.title}</h1>
+                <p className="text-sm mt-1" style={{color:'var(--text-muted)'}}>{currentTitle.subtitle}</p>
+              </div>
+
+              {/* Content */}
+              <div className="flex-1 overflow-auto px-8 py-6">
+                {activeScreen === 'users'          && <UserManagement />}
+                {activeScreen === 'integrations'   && <IntegrationMonitor />}
+                {activeScreen === 'features'       && <FeatureFlags />}
+                {activeScreen === 'screen-config'  && <ScreenConfig />}
+                {activeScreen === 'ai-performance' && <AIPerformance />}
+                {activeScreen === 'audit-log'      && <AuditLog />}
+                {activeScreen === 'security-access'&& <SecurityAccess />}
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+
+    const tenantSecurity = [
+      { clientId:'proviso', mfa:'enforced', sessions:4, failedLogins:0, ipAllowlist:false, lastAudit:'Mar 20, 2026', status:'green' },
+      { clientId:'lyons',   mfa:'optional', sessions:1, failedLogins:2, ipAllowlist:false, lastAudit:'Mar 10, 2026', status:'amber' },
+      { clientId:'niles',   mfa:'none',     sessions:0, failedLogins:0, ipAllowlist:false, lastAudit:'—', status:'red' },
+    ];
+
+    const apiKeys = [
+      { id:'k1', clientId:'proviso', label:'InfoLink CSV Parser (email ingestion)', created:'Feb 1, 2026', lastUsed:'Today 6:02 AM', masked:'sk-hc-prov-****-****-3a7f' },
+      { id:'k2', clientId:'proviso', label:'Anthropic AI API Key', created:'Feb 1, 2026', lastUsed:'Today 9:14 AM', masked:'sk-ant-****-****-api2' },
+      { id:'k3', clientId:'lyons',   label:'InfoLink CSV Parser (email ingestion)', created:'Mar 15, 2026', lastUsed:'Mar 20, 2026', masked:'sk-hc-lyon-****-****-7e1d' },
+    ];
+
+    const sessionConfig = [
+      { label:'Session timeout (idle)',    value:'8 hours',  configurable:true },
+      { label:'Max concurrent sessions',  value:'5',         configurable:true },
+      { label:'Remember device (days)',   value:'30 days',   configurable:true },
+      { label:'MFA grace period',         value:'0 minutes', configurable:false },
+      { label:'Password rotation',        value:'90 days',   configurable:true },
+      { label:'Failed login lockout',     value:'5 attempts',configurable:true },
+    ];
+
+    // ============ COMPONENT: SecurityAccess ============
+    function SecurityAccess() {
+      const [showKey, setShowKey] = React.useState({});
+      const toggleKey = (id) => setShowKey(p => ({ ...p, [id]: !p[id] }));
+
+      const mfaEnforced    = tenantSecurity.filter(t => t.mfa === 'enforced').length;
+      const totalSessions  = tenantSecurity.reduce((sum, t) => sum + t.sessions, 0);
+      const totalFailed    = tenantSecurity.reduce((sum, t) => sum + t.failedLogins, 0);
+      const failedClient   = tenantSecurity.find(t => t.failedLogins > 0);
+      const failedSub      = failedClient
+        ? (CLIENTS.find(c => c.id === failedClient.clientId)?.shortName ?? failedClient.clientId) + ' — investigating'
+        : 'none in 24h';
+      const attentionCount = tenantSecurity.filter(t => t.status !== 'green').length;
+
+      return (
+        <div className="space-y-6">
+          {/* Summary bar */}
+          <div className="grid grid-cols-4 gap-4">
+            {[
+              { label:'MFA Enforced', value:`${mfaEnforced} / ${tenantSecurity.length}`, sub:'clients', color: mfaEnforced === tenantSecurity.length ? 'var(--success)' : 'var(--warning)' },
+              { label:'Active Sessions', value:String(totalSessions), sub:'across all tenants', color:'var(--brand-indigo)' },
+              { label:'Failed Logins (24h)', value:String(totalFailed), sub: failedSub, color: totalFailed > 0 ? 'var(--danger)' : 'var(--success)' },
+              { label:'API Keys', value:String(apiKeys.length), sub:'all active', color:'var(--success)' },
+            ].map(m => (
+              <div key={m.label} className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
+                <div className="text-xs text-gray-500 font-medium mb-1">{m.label}</div>
+                <div className="text-2xl font-bold" style={{color:m.color}}>{m.value}</div>
+                <div className="text-xs text-gray-400 mt-1">{m.sub}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* Per-tenant MFA + session status */}
+          <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+              <h2 className="admin-section-title">Tenant Security Status</h2>
+              <span className="text-xs font-medium" style={{color: attentionCount > 0 ? 'var(--danger)' : 'var(--success)'}}>{attentionCount > 0 ? `${attentionCount} ${attentionCount === 1 ? 'tenant needs' : 'tenants need'} attention` : 'All tenants secure'}</span>
+            </div>
+            <table className="admin-table w-full">
+              <thead>
+                <tr>
+                  {['Client','MFA Status','Active Sessions','Failed Logins (24h)','IP Allowlist','Last Audit',''].map(h => (
+                    <th key={h}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {tenantSecurity.map(t => (
+                  <tr key={t.clientId}>
+                    <td className="font-semibold">{CLIENTS.find(c=>c.id===t.clientId)?.name ?? t.clientId}</td>
+                    <td className="px-6 py-4">
+                      <span className={t.mfa === 'enforced' ? 'badge badge-green' : t.mfa === 'optional' ? 'badge badge-amber' : 'badge badge-red'}>{t.mfa.charAt(0).toUpperCase()+t.mfa.slice(1)}</span>
+                    </td>
+                    <td>{t.sessions}</td>
+                    <td className="px-6 py-4">
+                      <span style={{color: t.failedLogins > 0 ? 'var(--danger)' : 'var(--text-muted)', fontWeight: t.failedLogins > 0 ? 600 : 400}}>{t.failedLogins}</span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className={t.ipAllowlist ? 'badge badge-green' : 'badge badge-gray'}>{t.ipAllowlist ? 'Enabled' : 'Off'}</span>
+                    </td>
+                    <td style={{color:'var(--text-muted)'}}>{t.lastAudit}</td>
+                    <td className="px-6 py-4">
+                      <button className="admin-btn-ghost text-xs px-2 py-1">Configure \u2192</button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="grid grid-cols-2 gap-6">
+            {/* Session configuration */}
+            <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+              <div className="px-6 py-4 border-b border-gray-100">
+                <h2 className="admin-section-title">Session Configuration</h2>
+                <p className="text-xs text-gray-400 mt-0.5">Platform-wide defaults — overridable per tenant</p>
+              </div>
+              <div className="divide-y divide-gray-50">
+                {sessionConfig.map(s => (
+                  <div key={s.label} className="px-6 py-3 flex items-center justify-between">
+                    <span className="text-sm text-gray-600">{s.label}</span>
+                    <div className="flex items-center gap-3">
+                      <span className="text-sm font-semibold text-gray-800">{s.value}</span>
+                      {s.configurable && <button className="admin-btn-ghost text-xs px-2 py-1">Edit</button>}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* API key management */}
+            <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+              <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+                <div>
+                  <h2 className="admin-section-title">API Keys & Credentials</h2>
+                  <p className="text-xs text-gray-400 mt-0.5">Integration tokens — masked by default</p>
+                </div>
+                <button className="admin-btn-primary text-xs px-3 py-1.5">+ Generate Key</button>
+              </div>
+              <div className="divide-y divide-gray-50">
+                {apiKeys.map(k => (
+                  <div key={k.id} className="px-6 py-3">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-sm font-semibold text-gray-800">{k.label}</span>
+                      <div className="flex gap-2">
+                        <button onClick={() => toggleKey(k.id)} className="admin-btn-ghost text-xs px-2 py-1">{showKey[k.id] ? 'Hide' : 'Reveal'}</button>
+                        <button className="admin-btn-ghost-danger text-xs px-2 py-1">Revoke</button>
+                      </div>
+                    </div>
+                    <div className="text-xs text-gray-400">{CLIENTS.find(c=>c.id===k.clientId)?.shortName ?? k.clientId} \u00b7 Last used: {k.lastUsed}</div>
+                    <div className="text-xs font-mono rounded px-2 py-1 mt-1" style={{background:'var(--ink-100)',color:'var(--ink-800)'}}>
+                      {showKey[k.id] ? k.masked : '\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022'}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* AI Guardrail kill switches */}
+          <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-100">
+              <h2 className="admin-section-title">AI Guardrail Controls</h2>
+              <p className="text-xs text-gray-400 mt-0.5">Emergency kill switches \u2014 take effect immediately without a code deploy</p>
+            </div>
+            <div className="grid grid-cols-3 gap-0 divide-x divide-gray-100">
+              {[
+                { label:'Ask Tenor (All Tenants)', desc:'Natural language Q&A', status:true, risk:'Low' },
+                { label:'AI Investment Recs', desc:'Advisory recommendations engine', status:true, risk:'Medium' },
+                { label:'Statement Auto-Parse', desc:'AI PDF parsing for investment custodian statements', status:true, risk:'Low' },
+                { label:'AI Board Report Narrative (V2)', desc:'Draft generation for board reports', status:false, risk:'Medium' },
+                { label:'Prompt Injection Filter', desc:'Block malicious query patterns', status:true, risk:'Critical \u2014 keep ON' },
+              ].map(g => (
+                <div key={g.label} className="px-6 py-4">
+                  <div className="flex items-start justify-between mb-2">
+                    <span className="text-sm font-semibold text-gray-800">{g.label}</span>
+                    <span className={'ml-2 flex-shrink-0 ' + (g.status ? 'badge badge-green' : 'badge badge-gray')}>{g.status ? 'ON' : 'OFF'}</span>
+                  </div>
+                  <div className="text-xs text-gray-400 mb-2">{g.desc}</div>
+                  <div className="text-xs text-gray-400">Risk: <span style={{color: g.risk.includes('Critical') ? 'var(--danger)' : g.risk === 'Medium' ? 'var(--warning)' : 'var(--success)', fontWeight: g.risk.includes('Critical') || g.risk === 'Medium' ? 600 : 400}}>{g.risk}</span></div>
+                  <button
+                    className={'mt-2 text-xs px-3 py-1 rounded-lg font-semibold transition-colors' + (g.risk.includes('Critical') ? ' bg-gray-100 text-gray-300 cursor-not-allowed' : '')}
+                    style={g.risk.includes('Critical') ? {} : g.status ? {background:'var(--danger-bg)',color:'var(--danger)'} : {background:'var(--success-bg)',color:'var(--success)'}}
+                    disabled={g.risk.includes('Critical')}>
+                    {g.risk.includes('Critical') ? 'Locked' : g.status ? 'Disable' : 'Enable'}
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // ============ RENDER ============
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<PlatformAdmin />);
+  </script>
+</body>
+</html>
